@@ -30,16 +30,25 @@ int scanBigNum(char *s, BigNum *bn) {
     Byte *curr = bn->bytes;
     unsigned char flag = 0;
     while (*s != '\0') {
+        
         if (isnumber(*s)) {
             flag = 1;
             *curr = *s;
+            bn->nbytes++;
             curr++;
+			// if (bn->nbytes > 20) {
+			// 	bn->bytes = realloc(bn->bytes, (sizeof(Byte) * bn->nbytes));
+			// }
+            
         }
         s++;
     }
     *curr = '\0';
-    if (flag == 0) return 0;
-    return 1;
+	printf("no of bytes is: %i\n", bn->nbytes);
+	printf("allocated space: %ld\n", strlen((char *)bn->bytes));
+
+        if (flag == 0) return 0;
+        return 1;
 }
 
 // Display a BigNum in decimal format
