@@ -9,33 +9,41 @@
 #include "BigNum.h"
 
 // Initialise a BigNum to N bytes, all zero
-void initBigNum (BigNum *bn, int Nbytes)
-{
-	// TODO
-	bn->nbytes = Nbytes;
-	bn->bytes = malloc(Nbytes);
-	assert(bn->bytes != NULL);
-	return;
+void initBigNum(BigNum *bn, int Nbytes) {
+    // TODO
+    bn = malloc(sizeof(BigNum));
+    assert(bn != NULL);
+    bn->nbytes = Nbytes;
+    bn->bytes = malloc(Nbytes);
+    assert(bn->bytes != NULL);
+    return;
 }
 
 // Add two BigNums and store result in a third BigNum
-void addBigNums (BigNum bnA, BigNum bnB, BigNum *res)
-{
-	// TODO
-	return;
+void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
+    // TODO
+    return;
 }
 
 // Set the value of a BigNum from a string of digits
 // Returns 1 if it *was* a string of digits, 0 otherwise
-int scanBigNum (char *s, BigNum *bn)
-{
-	// TODO
-	return 1;
+int scanBigNum(char *s, BigNum *bn) {
+    // TODO
+    char tmp[50];
+    int i = 0;
+    while (*s != '\0') {
+        if (isdigit(*s)) {
+            tmp[i] = *s;
+            i++;
+        }
+        s++;
+    }
+        printf("the stirng is : %s\n", tmp);
+        return 1;
 }
 
 // Display a BigNum in decimal format
-void showBigNum (BigNum bn)
-{
-	// TODO
-	return;
+void showBigNum(BigNum bn) {
+    // TODO
+    return;
 }
