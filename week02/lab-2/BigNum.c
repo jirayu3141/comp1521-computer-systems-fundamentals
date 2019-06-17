@@ -12,6 +12,9 @@
 void initBigNum (BigNum *bn, int Nbytes)
 {
 	// TODO
+	bn->nbytes = Nbytes;
+	bn->bytes = malloc(Nbytes);
+	assert(bn->bytes != NULL);
 	return;
 }
 
