@@ -5,9 +5,73 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "BigNum.h"
 
+
+// Returns the number of real digits from strings
+int real_digits (char *s) {
+    int size = 0;
+    for (int i = 0, j = strlen(s), found_num = 0; i<j; i++) {
+       //check for the index of the first real number
+       if (s[i] >= '1' && s[i]<= '9' && found_num != 1) {
+           found_num = 1;
+       }
+       //count the size of digits
+        if (found_num > 0 && isdigit(s[i])) {
+            size++;
+        }
+    }
+    return size;
+}
+
+//put real digits into array, array of digit-rich
+char *digits_to_array(char *s) {
+    int size = real_digits(s);
+    //allocate space for the array
+    char *digits = malloc(sizeof(Byte) * size);
+
+    for (int i = 0, j = strlen(s), found_num = 0, ind = 0; i<j; i++) {
+       //check for the index of the first real number
+       if (s[i] >= '1' && s[i]<= '9' && found_num != 1) {
+           found_num = 1;
+       }
+       //pass in the digits to array
+        if (found_num > 0 && isdigit(s[i])) {
+            digits[ind] = s[i];
+            ind++;
+        }
+    }
+   
+    return digits;
+}
+
+void reverse_string (char *s) {
+    int tmp = 0;
+    for (int start = 0, end = strlen(s) - 1; start < end; start++,end--) {
+        tmp = s[start];
+        s[start] = s[end];
+        s[end] = tmp;
+    }
+}
+
+bool checkvalid(char *s) {
+    int flag = 0;
+    for (int i = 0, j = strlen(s); i < j; i++) {
+        if (isdigit(s[i])) {
+            flag = 1;
+        }
+    }
+    if (flag ==0) return false;
+    else return true;
+}
+
+void copy_string (Byte *dest, char *source) {
+    for (int i = 0, j = strlen(source); i < j; i++) {
+        dest[i] = source[i];
+    }
+}
 
 // Initialise a BigNum to N bytes, all zero
 void initBigNum(BigNum *bn, int Nbytes) {
@@ -20,56 +84,38 @@ void initBigNum(BigNum *bn, int Nbytes) {
 
 // Add two BigNums and store result in a third BigNum
 void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
-    // TODO
-    
-    //adding last digit and track the carry
-    int sum = 0, carry = 0, currA = 0, currB = 0, ind = 0;
-    while (bnA.bytes[currA] || bnB.bytes[currB] != '\0') {
-        if (ind >= 20) {
-            res->bytes = realloc (res->bytes, (ind+1) * sizeof(Byte));
-        }
-        int A = 0, B = 0;
-        /*convert char to int*/
-        if (bnA.bytes[currA] != '\0')
-            A = bnA.bytes[currA] - '0';
-        else
-            A = 0;
-        if (bnB.bytes[currB] != '\0') 
-            B = bnB.bytes[currA] - '0';
-        else
-            B = 0;
-        
-
-        /*do the addition*/
-        sum = A + B;
-        /*check if it has exsisitng carry */
-        if (carry == 1) {
-            sum++;
-            carry = 0;
-        }
-        if (sum >= 10) {
-            carry = 1;
-            sum -= 10;
-        }
-        printf("A is %i\n", A);
-        printf("B is %i\n", B);
-        printf("carry is %i\n", carry);
-        printf("sum is %c\n", (Byte)(sum) + '0');
-        res->bytes[ind] = (Byte)sum + '0';
-
-        if (bnA.bytes[currA] != '\0') 
-            currA++;
-        if (bnB.bytes[currB] != '\0') 
-            currB++; 
-        ind++;
-        /*check of there are still carry*/
-        if (carry == 1) {
-            res->bytes[ind+1] = '1';
-        }
-        /*reallocate size for res if it is above 20 digis */
-        
-        res->nbytes = ind-1;
+    int i = 0, j = 0,sum = 0, carry = 0;
+    char tmp[100] = {'\0'};
+    res->nbytes = 0;
+    while (bnA.bytes[i] != '\0' || bnB.bytes[j] != '\0') {
+        int A = bnA.bytes[i] != '\0' ? bnA.bytes[i] - '0' : 0;
+        int B = bnB.bytes[j] != '\0' ? bnB.bytes[j] - '0' : 0;
+        //calculate value of the digits
+        sum = carry + A + B;
+        /* debug */
+        //printf("this is : %i\n", A);
+        //update the carry
+        carry = (sum >= 10) ? 1 : 0;
+        //update sum if greater than 10
+        sum = sum % 10;
+        //put sum into the array
+        tmp[i >= j ? i : j] = sum + '0';
+        //update the size of sum
+        res->nbytes++;
+        //move to the next digit
+        if (bnA.bytes[i] != '\0') i++;
+        if (bnB.bytes[j] != '\0') j++;
     }
+    if (carry > 0) {
+        tmp[res->nbytes] = '1';
+        res->nbytes++;
+    }
+    if (res->nbytes > 20) {
+        res->bytes = realloc(res->bytes, sizeof(Byte) * strlen(tmp));
+    }
+    copy_string(res->bytes, tmp);
+
+
     return;
 }
 
@@ -78,43 +124,16 @@ void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
 // Set the value of a BigNum from a string of digits
 // Returns 1 if it *was* a string of digits, 0 otherwise
 int scanBigNum(char *s, BigNum *bn) {
-    // check if the string contain numbers and how many digits there are
-    int flag = 0; //flag if number is detected
-    char *curr = s;
-    int num = 0; //int to store the number of digits
-    int flag_non_zero = 0;
-    /* search for number and scan in order */
-    while (*curr != '\0') {
-        if (isdigit(*curr)) {
-            if (num >= 20) {
-                bn->bytes = realloc (bn->bytes, num * sizeof(Byte));
-            }
-            flag = 1;   //digit is found
-            if (*curr != '0') {
-                flag_non_zero = 1;
-            }
-            if (flag_non_zero == 1) {            
-                bn->bytes[num] = *curr;
-                num++;
-            }
-        }
-        curr++;
+    /*check if it exceed previously allocated space*/
+    int size = real_digits(s);
+    if (size > 20) {
+         bn->bytes = realloc(bn->bytes, size * sizeof(Byte));
     }
-    if (flag == 0) return 0;
-	
-    /*reverse the array*/
-    int start = 0;
-    int end = num-1;
-    Byte tmp;
-    while (start < end) {
-        tmp = bn->bytes[start];
-        bn->bytes[start] = bn->bytes[end];
-        bn->bytes[end] = tmp;
-        start++;
-        end--;
-
-    }
-    bn->nbytes = num-1;
+    if (!checkvalid(s)) return 0;
+    char* digits = digits_to_array(s);
+    reverse_string(digits);
+    bn->bytes = (Byte *)strcpy((char *)bn->bytes, digits);
+    bn->nbytes = size;
 
     return 1;
 }
@@ -123,7 +142,7 @@ int scanBigNum(char *s, BigNum *bn) {
 void showBigNum(BigNum bn) {
     
     //printing backwards
-    for (int start = 0, end = bn.nbytes; end >= start; end--) {
+    for (int start = 0, end = bn.nbytes - 1; end >= start; end--) {
         printf("%c", bn.bytes[end]);
     }
 }
