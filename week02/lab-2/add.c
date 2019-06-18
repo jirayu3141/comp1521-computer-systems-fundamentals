@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
     	return 1;
     }
 
-    // // Add num1+num2, store result in sum
-    // addBigNums (num1, num2, &sum);
+    // Add num1+num2, store result in sum
+    addBigNums (num1, num2, &sum);
 
     printf("Sum of ");
     showBigNum(num1);

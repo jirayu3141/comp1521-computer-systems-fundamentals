@@ -13,7 +13,7 @@
 void initBigNum(BigNum *bn, int Nbytes) {
     // TODO
     bn->nbytes = Nbytes;
-    bn->bytes = malloc(Nbytes * sizeof(Byte));
+    bn->bytes = calloc(Nbytes , sizeof(Byte));
     assert(bn->bytes != NULL);
     return;
 }
@@ -24,20 +24,19 @@ void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
     //adding last digit and track the carry
     int sum = 0, carry = 0, currA = 0, currB = 0;
     while (bnA.bytes[currA] && bnB.bytes[currB] != '\0') {
-        int A = atoi (bnA.bytes[currA]);
-        int B = atoi (bnB.bytes[currB]);
+        /*check if it has exsisitng carry */
         if (carry == 1) {
             sum++;
             carry = 0;
         }
-        sum = A + B;
+        /*do the addition*/
+        sum = (int)bnA.bytes[currA] + (int)bnB.bytes[currB];
         if (sum >= 10) {
             carry = 1;
             sum -= 10;
         }
-        res->bytes 
-        res->nbytes++;
 
+        sprintf((char *)res->bytes, "%d", sum); //put sum in res (pointer to BigNum
 
         if (bnA.bytes[currA] != '\0') currA++;
         if (bnB.bytes[currB] != '\0') currB++; 
