@@ -8,6 +8,7 @@
 
 #include "BigNum.h"
 
+
 // Initialise a BigNum to N bytes, all zero
 void initBigNum(BigNum *bn, int Nbytes) {
     // TODO
@@ -20,6 +21,28 @@ void initBigNum(BigNum *bn, int Nbytes) {
 // Add two BigNums and store result in a third BigNum
 void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
     // TODO
+    //adding last digit and track the carry
+    int sum = 0, carry = 0, currA = 0, currB = 0;
+    while (bnA.bytes[currA] && bnB.bytes[currB] != '\0') {
+        int A = atoi (bnA.bytes[currA]);
+        int B = atoi (bnB.bytes[currB]);
+        if (carry == 1) {
+            sum++;
+            carry = 0;
+        }
+        sum = A + B;
+        if (sum >= 10) {
+            carry = 1;
+            sum -= 10;
+        }
+        res->bytes 
+        res->nbytes++;
+
+
+        if (bnA.bytes[currA] != '\0') currA++;
+        if (bnB.bytes[currB] != '\0') currB++; 
+    }
+
     return;
 }
 
@@ -27,18 +50,34 @@ void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
 // Returns 1 if it *was* a string of digits, 0 otherwise
 int scanBigNum(char *s, BigNum *bn) {
     // check if the string contain numbers and how many digits there are
-    int flag = 0;
+    int flag = 0; //flag if number is detected
     char *curr = s;
+    int num = 0; //int to store the number of digits
+    
+    /* search for number and scan in order */
     while (*curr != '\0') {
         if (isdigit(*curr)) {
-            bn->nbytes++;
-            flag = 1;
-            curr++;
+            flag = 1;   //digit is found
+            bn->bytes[num] = *curr;
+            num++;
         }
+        curr++;
     }
     if (flag == 0) return 0;
-	//scan in backwards
-    sscanf((char *)(bn->bytes), s);
+	
+    /*reverse the array*/
+    int start = 0;
+    int end = num-1;
+    Byte tmp;
+    while (start < end) {
+        tmp = bn->bytes[start];
+        bn->bytes[start] = bn->bytes[end];
+        bn->bytes[end] = tmp;
+        start++;
+        end--;
+
+    }
+
 
     return 1;
 }
@@ -46,13 +85,8 @@ int scanBigNum(char *s, BigNum *bn) {
 // Display a BigNum in decimal format
 void showBigNum(BigNum bn) {
     // TODO
-    // read numbers backwards, by scanning to the last point of arrray then read
-    // it
-    int start = 0;
-    // need to -3 beacuse of '\0', array start with 0 and the sign bit
-    int end = strlen((char *)bn.bytes) - 3;
-    while (end >= start) {
+    //printing backwards
+    for (int start = 0, end = bn.nbytes; end >= start; end--) {
         printf("%c", bn.bytes[end]);
-        end--;
     }
 }
