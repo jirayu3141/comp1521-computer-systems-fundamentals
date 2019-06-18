@@ -26,34 +26,33 @@ void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
 // Set the value of a BigNum from a string of digits
 // Returns 1 if it *was* a string of digits, 0 otherwise
 int scanBigNum(char *s, BigNum *bn) {
-    // if it is not digit, return 0
-    Byte *curr = bn->bytes;
-    unsigned char flag = 0;
-    while (*s != '\0') {
-        
-        if (isnumber(*s)) {
-            flag = 1;
-            *curr = *s;
+    // check if the string contain numbers and how many digits there are
+    int flag = 0;
+    char *curr = s;
+    while (*curr != '\0') {
+        if (isdigit(*curr)) {
             bn->nbytes++;
+            flag = 1;
             curr++;
-			// if (bn->nbytes > 20) {
-			// 	bn->bytes = realloc(bn->bytes, (sizeof(Byte) * bn->nbytes));
-			// }
-            
         }
-        s++;
     }
-    *curr = '\0';
-	printf("no of bytes is: %i\n", bn->nbytes);
-	printf("allocated space: %ld\n", strlen((char *)bn->bytes));
+    if (flag == 0) return 0;
+	//scan in backwards
+    sscanf((char *)(bn->bytes), s);
 
-        if (flag == 0) return 0;
-        return 1;
+    return 1;
 }
 
 // Display a BigNum in decimal format
 void showBigNum(BigNum bn) {
     // TODO
-    printf("%s", bn.bytes);
-    return;
+    // read numbers backwards, by scanning to the last point of arrray then read
+    // it
+    int start = 0;
+    // need to -3 beacuse of '\0', array start with 0 and the sign bit
+    int end = strlen((char *)bn.bytes) - 3;
+    while (end >= start) {
+        printf("%c", bn.bytes[end]);
+        end--;
+    }
 }
