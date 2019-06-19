@@ -11,10 +11,10 @@ int main(int argc, char *argv[]) {
     BigNum num2;  // second input number
     BigNum sum;   // num1 + num2
 
-    // if (argc < 3) {
-    //     printf("Usage: %s Num1 Num2\n", argv[0]);
-    //     return 1;
-    // }
+    if (argc < 3) {
+        printf("Usage: %s Num1 Num2\n", argv[0]);
+        return 1;
+    }
 
     // Initialise BigNum objects
     initBigNum(&num1, 20);
