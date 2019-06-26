@@ -55,6 +55,7 @@ void reverse_string(char *s) {
     }
 }
 
+/*check if the user's input is valid*/
 bool checkvalid(char *s) {
     int flag = 0;
     for (int i = 0, j = strlen(s); i < j; i++) {
@@ -66,12 +67,6 @@ bool checkvalid(char *s) {
         return false;
     else
         return true;
-}
-
-void copy_string(Byte *dest, char *source) {
-    for (int i = 0, j = strlen(source); i < j; i++) {
-        dest[i] = source[i];
-    }
 }
 
 // Initialise a BigNum to N bytes, all zero
@@ -93,8 +88,6 @@ void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
         int B = bnB.bytes[j] != '\0' ? bnB.bytes[j] - '0' : 0;
         // calculate value of the digits
         sum = carry + A + B;
-        /* debug */
-        // printf("this is : %i\n", A);
         // update the carry
         carry = (sum >= 10) ? 1 : 0;
         // update sum if greater than 10
@@ -116,7 +109,7 @@ void addBigNums(BigNum bnA, BigNum bnB, BigNum *res) {
     if (res->nbytes > 20) {
         res->bytes = realloc(res->bytes, sizeof(Byte) * strlen(tmp));
     }
-    copy_string(res->bytes, tmp);
+    strcpy((char *)res->bytes, tmp);
 
     return;
 }
