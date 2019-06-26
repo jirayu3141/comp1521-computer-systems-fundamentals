@@ -23,7 +23,7 @@ int main (void)
 
         for (int i = 0; i < 32; i++) {
             int y = (*ptr & mask) > 1 ? 1 : 0;
-            printf("%i\n", y);
+            printf("%i", y);
             mask = (mask >> 1);
         }
 

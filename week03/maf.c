@@ -1,7 +1,7 @@
 // COMP1521 19t2 ... lab 03: Make a Float
 // maf.c: read in bit strings to build a float value
 // Written by John Shepherd, August 2017
-// Completed by ...
+// Completed by Jirayu Sirivorawong z5125805 27 Jun 2019
 
 #include <assert.h>
 #include <err.h>
@@ -11,14 +11,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <math.h>
 
-typedef uint32_t word;
+typedef uint32_t word; //word is 32 bits
 
 typedef struct float32 {
 	// define bit_fields for sign, exp and frac
 	// obviously they need to be larger than 1-bit each
 	// and may need to be defined in a different order
-	unsigned int sign : 1, exp : 1, frac : 1;
+	unsigned int frac : 23,exp : 8, sign : 1;
 } float32;
 
 typedef union bits32 {
@@ -31,6 +32,8 @@ void checkArgs (int, char **);
 bits32 getBits (char *, char *, char *);
 char *showBits (word, char *);
 bool justBits (char *, int);
+double bin_to_dec (char *frac);
+void print_union (bits32 x);
 
 int main (int argc, char **argv)
 {
@@ -59,17 +62,14 @@ int main (int argc, char **argv)
 bits32 getBits (char *sign, char *exp, char *frac)
 {
 	bits32 new;
-
-	// this line is just to keep gcc happy
-	// delete it when you have implemented the function
 	new.bits.sign = new.bits.exp = new.bits.frac = 0;
 
 	// convert char *sign into a single bit in new.bits
-
+	new.bits.sign = (*sign == '0') ? 0 : 1;
 	// convert char *exp into an 8-bit value in new.bits
-
+	new.bits.exp = (unsigned int) strtol(exp, NULL, 2);
 	// convert char *frac into a 23-bit value in new.bits
-
+	new.bits.frac = (unsigned int)strtol(frac, NULL, 2);
 	return new;
 }
 
@@ -79,9 +79,7 @@ bits32 getBits (char *sign, char *exp, char *frac)
 // return a pointer to buf
 char *showBits (word val, char *buf)
 {
-	// this line is just to keep gcc happy
-	// delete it when you have implemented the function
-	buf[0] = '\0';
+	sprintf(buf, "%d", val);
 	return buf;
 }
 
@@ -116,4 +114,26 @@ bool justBits (char *str, int len)
 		str++;
 	}
 	return true;
+}
+
+double bin_to_dec (char *frac){
+	double twos = 2, fracDecimal = 0; 
+    for (int i = 0, len = strlen(frac); i < len; ++i) 
+    { 
+        fracDecimal += (frac[i] - '0') / twos; 
+        twos *= 2.0; 
+    } 
+	return fracDecimal;
+}
+
+void print_union(bits32 x) {
+	unsigned int *ptr = (unsigned int *)&x;
+	unsigned int mask = (1 << 31);
+
+	for (int i = 0; i < 32; i++) {
+		int y = (*ptr & mask) > 1 ? 1 : 0;
+		printf("%i", y);
+		mask = (mask >> 1);
+	}
+
 }
