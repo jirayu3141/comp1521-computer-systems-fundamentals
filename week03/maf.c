@@ -78,7 +78,7 @@ bits32 getBits (char *sign, char *exp, char *frac)
 // a sequence of '0' and '1' characters in buf
 // assume that buf has size > 32
 // return a pointer to buf
-char *showBits (word val, char *buf)
+char *showBits (word val, char *buf) {
 
 	//set buf to 0 so it prints all 32 bits
 	for (int i = 0, j = 32; i < j; i++)
