@@ -80,8 +80,8 @@ bits32 getBits (char *sign, char *exp, char *frac)
 // return a pointer to buf
 char *showBits (word val, char *buf) {
 
-	//set buf to 0 so it prints all 32 bits
-	for (int i = 0, j = 32; i < j; i++)
+	//set buf to 0 so it prints all 32 bits (+2 for space)
+	for (int i = 0, j = 34; i < j; i++)
 		buf[i] = '0';
 	dectobi(val, buf);
 	return buf;
@@ -148,13 +148,19 @@ void dectobi(word val, char *buf)
 	
 	if (val == 0) {
 		index = (index2 < 32? (32-index2): 0);
+		//add space
+		buf[1] = ' ';
+		buf[10] = ' ';
 		return;
 	}
 	//index2 tracks string lenghth
 	index2++;
 	dectobi(val/2, buf);
-	//printf("%d", val%2);
+	//add spacing
+	if (index == 1 || index == 10) {
+		index++;
+	}
+	//put binary in array
 	buf[index] = (val%2) + '0';
 	index++;
-	//return buf;
 }
