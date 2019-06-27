@@ -147,10 +147,11 @@ void dectobi(word val, char *buf)
 	static int index2 = 0;
 	
 	if (val == 0) {
-		index = (index2 < 32? (32-index2): 0);
-		//add space
+		index = (index2 < 32 ? (32-index2): 0);
+		// //add space
 		buf[1] = ' ';
 		buf[10] = ' ';
+		if (index == 2 || index == 9) index++;
 		return;
 	}
 	//index2 tracks string lenghth
