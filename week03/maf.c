@@ -34,11 +34,12 @@ char *showBits (word, char *);
 bool justBits (char *, int);
 double bin_to_dec (char *frac);
 void print_union (bits32 x);
+void dectobi (word, char *);
 
 int main (int argc, char **argv)
 {
 	bits32 u;
-	char out[50];
+	char out[50] = {'0'};
 
 	// here's a hint ...
 	u.bits.sign = u.bits.exp = u.bits.frac = 0;
@@ -78,8 +79,11 @@ bits32 getBits (char *sign, char *exp, char *frac)
 // assume that buf has size > 32
 // return a pointer to buf
 char *showBits (word val, char *buf)
-{
-	sprintf(buf, "%d", val);
+
+	//set buf to 0 so it prints all 32 bits
+	for (int i = 0, j = 32; i < j; i++)
+		buf[i] = '0';
+	dectobi(val, buf);
 	return buf;
 }
 
@@ -97,7 +101,6 @@ void checkArgs (int argc, char **argv)
 		errx (EX_DATAERR, "invalid Exp: %s",  argv[2]);
 	if (! justBits (argv[3], 23))
 		errx (EX_DATAERR, "invalid Frac: %s", argv[3]);
-
 	return;
 }
 
@@ -136,4 +139,22 @@ void print_union(bits32 x) {
 		mask = (mask >> 1);
 	}
 
+}
+
+void dectobi(word val, char *buf) 
+{
+	static int index = 0;
+	static int index2 = 0;
+	
+	if (val == 0) {
+		index = (index2 < 32? (32-index2): 0);
+		return;
+	}
+	//index2 tracks string lenghth
+	index2++;
+	dectobi(val/2, buf);
+	//printf("%d", val%2);
+	buf[index] = (val%2) + '0';
+	index++;
+	//return buf;
 }
