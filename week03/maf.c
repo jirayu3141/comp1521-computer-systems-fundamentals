@@ -64,7 +64,6 @@ bits32 getBits (char *sign, char *exp, char *frac)
 {
 	bits32 new;
 	new.bits.sign = new.bits.exp = new.bits.frac = 0;
-
 	// convert char *sign into a single bit in new.bits
 	new.bits.sign = (*sign == '0') ? 0 : 1;
 	// convert char *exp into an 8-bit value in new.bits
@@ -83,6 +82,7 @@ char *showBits (word val, char *buf) {
 	//set buf to 0 so it prints all 32 bits (+2 for space)
 	for (int i = 0, j = 34; i < j; i++)
 		buf[i] = '0';
+	//convert from decimal to binary and put it in buffer
 	dectobi(val, buf);
 	return buf;
 }
@@ -119,6 +119,7 @@ bool justBits (char *str, int len)
 	return true;
 }
 
+//converts from binary to decimal
 double bin_to_dec (char *frac){
 	double twos = 2, fracDecimal = 0; 
     for (int i = 0, len = strlen(frac); i < len; ++i) 
@@ -128,39 +129,27 @@ double bin_to_dec (char *frac){
     } 
 	return fracDecimal;
 }
-
-void print_union(bits32 x) {
-	unsigned int *ptr = (unsigned int *)&x;
-	unsigned int mask = (1 << 31);
-
-	for (int i = 0; i < 32; i++) {
-		int y = (*ptr & mask) > 1 ? 1 : 0;
-		printf("%i", y);
-		mask = (mask >> 1);
-	}
-
-}
-
+//convert decimal to binary
 void dectobi(word val, char *buf) 
 {
-	static int index = 0;
-	static int index2 = 0;
+	//index tracks putting bindary into buff (to account for 0 infront)
+	//index2 tracks string length 
+	static int index = 0, index2 = 0;
 	
 	if (val == 0) {
 		index = (index2 < 32 ? (32-index2): 0);
-		// //add space
+		//add space
 		buf[1] = ' ';
 		buf[10] = ' ';
+		//accoutn for index that writes on space 
 		if (index == 2 || index == 9) index++;
 		return;
 	}
 	//index2 tracks string lenghth
 	index2++;
 	dectobi(val/2, buf);
-	//add spacing
-	if (index == 1 || index == 10) {
-		index++;
-	}
+	//when index touches space, dont on it
+	if (index == 1 || index == 10) index++;
 	//put binary in array
 	buf[index] = (val%2) + '0';
 	index++;
