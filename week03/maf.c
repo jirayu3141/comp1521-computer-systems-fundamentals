@@ -22,6 +22,13 @@ typedef struct float32 {
 	unsigned int frac : 23,exp : 8, sign : 1;
 } float32;
 
+typedef struct double64 {
+	// define bit_fields for sign, exp and frac
+	// obviously they need to be larger than 1-bit each
+	// and may need to be defined in a different order
+	u_int64_t frac : 52, exp : 11, sign : 1;
+} double64;
+
 typedef union bits32 {
 	float fval;   // interpret the bits as a float
 	word xval;    // interpret as a single 32-bit word
@@ -129,7 +136,7 @@ double bin_to_dec (char *frac){
     } 
 	return fracDecimal;
 }
-//convert decimal to binary
+//convert decimal to binary and store in buff (for float)
 void dectobi(word val, char *buf) 
 {
 	//index tracks putting bindary into buff (to account for 0 infront)
@@ -138,6 +145,32 @@ void dectobi(word val, char *buf)
 	
 	if (val == 0) {
 		index = (index2 < 32 ? (32-index2): 0);
+		//add space
+		buf[1] = ' ';
+		buf[10] = ' ';
+		//accoutn for index that writes on space 
+		if (index == 2 || index == 9) index++;
+		return;
+	}
+	//index2 tracks string lenghth
+	index2++;
+	dectobi(val/2, buf);
+	//when index touches space, dont on it
+	if (index == 1 || index == 10) index++;
+	//put binary in array
+	buf[index] = (val%2) + '0';
+	index++;
+}
+
+//convert decimal to binary for double
+void dectobi64(word val, char *buf) 
+{
+	//index tracks putting bindary into buff (to account for 0 infront)
+	//index2 tracks string length 
+	static int index = 0, index2 = 0;
+	
+	if (val == 0) {
+		index = (index2 < 64 ? (32-index2): 0);
 		//add space
 		buf[1] = ' ';
 		buf[10] = ' ';
