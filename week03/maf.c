@@ -14,6 +14,7 @@
 #include <math.h>
 
 typedef uint32_t word; //word is 32 bits
+typedef uint64_t word64;
 
 typedef struct float32 {
 	// define bit_fields for sign, exp and frac
@@ -35,17 +36,28 @@ typedef union bits32 {
 	float32 bits; // manipulate individual bits
 } bits32;
 
+typedef union bits64 {
+	double fval;   // interpret the bits as a float
+	word xval;    // interpret as a single 32-bit word
+	double64 bits; // manipulate individual bits
+} bits64;
+
 void checkArgs (int, char **);
+void checkArgs64 (int, char **);
 bits32 getBits (char *, char *, char *);
+bits64 getBits64 (char *, char *, char *);
 char *showBits (word, char *);
+char *showBits64 (word, char *);
 bool justBits (char *, int);
 double bin_to_dec (char *frac);
 void print_union (bits32 x);
 void dectobi (word, char *);
+void dectobi64 (word, char *);
 
 int main (int argc, char **argv)
 {
 	bits32 u;
+	//bits64 u;
 	char out[50] = {'0'};
 
 	// here's a hint ...
@@ -53,15 +65,18 @@ int main (int argc, char **argv)
 
 	// check command-line args (all strings of 0/1
 	// kills program if args are bad
-	checkArgs (argc, argv);
+	//checkArgs (argc, argv);
+	//checkArgs64 (argc, argv);
 
 	// convert command-line args into components of
 	// a float32 inside a bits32, and return the union
 	u = getBits (argv[1], argv[2], argv[3]);
+	//u = getBits64 (argv[1], argv[2], argv[3]);
 
 	printf ("bits : %s\n", showBits (u.xval, out));
-	printf ("float: %0.10f\n", u.fval);
-
+	//printf ("bits : %s\n", showBits64 (u.xval, out));
+	printf ("float: %.10f\n", u.fval);
+    //printf ("float: %.40lf\n", u.fval);
 	return EXIT_SUCCESS;
 }
 
@@ -70,6 +85,20 @@ int main (int argc, char **argv)
 bits32 getBits (char *sign, char *exp, char *frac)
 {
 	bits32 new;
+	new.bits.sign = new.bits.exp = new.bits.frac = 0;
+	// convert char *sign into a single bit in new.bits
+	new.bits.sign = (*sign == '0') ? 0 : 1;
+	// convert char *exp into an 8-bit value in new.bits
+	new.bits.exp = (unsigned int) strtol(exp, NULL, 2);
+	// convert char *frac into a 23-bit value in new.bits
+	new.bits.frac = (unsigned int)strtol(frac, NULL, 2);
+	return new;
+}
+// convert three bit-strings (already checked)
+// into the components of a struct _float
+bits64 getBits64 (char *sign, char *exp, char *frac)
+{
+	bits64 new;
 	new.bits.sign = new.bits.exp = new.bits.frac = 0;
 	// convert char *sign into a single bit in new.bits
 	new.bits.sign = (*sign == '0') ? 0 : 1;
@@ -90,7 +119,17 @@ char *showBits (word val, char *buf) {
 	for (int i = 0, j = 34; i < j; i++)
 		buf[i] = '0';
 	//convert from decimal to binary and put it in buffer
-	dectobi(val, buf);
+	dectobi64(val, buf);
+	return buf;
+}
+
+char *showBits64 (word val, char *buf) {
+
+	//set buf to 0 so it prints all 32 bits (+2 for space)
+	for (int i = 0, j = 66; i < j; i++)
+		buf[i] = '0';
+	//convert from decimal to binary and put it in buffer
+	dectobi64(val, buf);
 	return buf;
 }
 
@@ -110,6 +149,24 @@ void checkArgs (int argc, char **argv)
 		errx (EX_DATAERR, "invalid Frac: %s", argv[3]);
 	return;
 }
+
+// checks command-line args
+// need at least 3, and all must be strings of 0/1
+// never returns if it finds a problem
+void checkArgs64 (int argc, char **argv)
+{
+	if (argc < 3)
+		errx (EX_USAGE, "usage: %s Sign Exp Frac", argv[0]);
+
+	if (! justBits (argv[1], 1))
+		errx (EX_DATAERR, "invalid Sign: %s", argv[1]);
+	if (! justBits (argv[2], 11))
+		errx (EX_DATAERR, "invalid Exp: %s",  argv[2]);
+	if (! justBits (argv[3], 52))
+		errx (EX_DATAERR, "invalid Frac: %s", argv[3]);
+	return;
+}
+
 
 // check whether a string is all 0/1 and of a given length
 bool justBits (char *str, int len)
@@ -170,7 +227,7 @@ void dectobi64(word val, char *buf)
 	static int index = 0, index2 = 0;
 	
 	if (val == 0) {
-		index = (index2 < 64 ? (32-index2): 0);
+		index = (index2 < 64 ? (64-index2): 0);
 		//add space
 		buf[1] = ' ';
 		buf[10] = ' ';
