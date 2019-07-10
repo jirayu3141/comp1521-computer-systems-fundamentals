@@ -28,6 +28,7 @@ typedef struct double64 {
 	// and may need to be defined in a different order
 	u_int64_t frac : 52, exp : 11, sign : 1;
 } double64;
+//add comment
 
 typedef union bits32 {
 	float fval;   // interpret the bits as a float
@@ -170,7 +171,7 @@ void dectobi64(word val, char *buf)
 	static int index = 0, index2 = 0;
 	
 	if (val == 0) {
-		index = (index2 < 64 ? (32-index2): 0);
+		index = (index2 < 64 ? (64-index2): 0);
 		//add space
 		buf[1] = ' ';
 		buf[10] = ' ';
