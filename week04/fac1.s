@@ -32,6 +32,7 @@ main:
 	syscall			# scanf("%d", into $v0)
 
 	### TODO: your code for the body of main() goes here
+<<<<<<< HEAD
 	move $s0, $v0
 	li $s1, 1
 	li $s2, 1
@@ -42,10 +43,10 @@ loop:
 	j loop
 
 exit:
+
 	la	$a0, msg2
 	li	$v0, 4
 	syscall			# printf("n! = ")
-
 
 	move	$a0, $s2	# assume $s2 holds n!
 	li	$v0, 1

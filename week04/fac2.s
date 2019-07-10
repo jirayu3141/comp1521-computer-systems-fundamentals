@@ -69,6 +69,15 @@ fac:
 
 	# TODO: place your code for the body of fac() here
 	# .... use the value of n in $a0, place n! in $v0
+    li    $t0, 1             # i = 1
+    li    $t1, 1             # product = 1
+for:
+   bgt   $t0, $a0, end_for
+   mul  $t1, $t0, $t1
+   addi  $t0, $t0, 1
+   j     for
+end_for:
+   move  $v1, $t1
 
 	# clean up stack frame
 	lw	$s1, -12($fp)	# restore $s1 value
