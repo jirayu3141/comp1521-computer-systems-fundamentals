@@ -9,7 +9,7 @@ void copyBackAndShow (void);
 
 int main (void)
 {
-	int maxiters;	//number of iteration
+	int maxiters;
 	printf ("# Iterations: ");
 	scanf ("%d", &maxiters);
 
