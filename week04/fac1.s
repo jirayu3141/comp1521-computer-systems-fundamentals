@@ -32,7 +32,6 @@ main:
 	syscall			# scanf("%d", into $v0)
 
 	### TODO: your code for the body of main() goes here
-<<<<<<< HEAD
 	move $s0, $v0
 	li $s1, 1
 	li $s2, 1
