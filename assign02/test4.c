@@ -34,15 +34,15 @@ int main (int argc, char *argv[])
 
 	// read malloc/free commands and carry them out
 
-	runMalloc(vars, 'a', 4);
+	runMalloc(vars, 'a', 100);
 	dumpVars(vars);
 	dumpHeap();
 
-	runMalloc(vars, 'b', 8);
+	runMalloc(vars, 'b', 200);
 	dumpVars(vars);
 	dumpHeap();
 
-	runMalloc(vars, 'c', 4);
+	runMalloc(vars, 'c', 300);
 	dumpVars(vars);
 	dumpHeap();
 
@@ -50,9 +50,23 @@ int main (int argc, char *argv[])
 	dumpVars(vars);
 	dumpHeap();
 
-	runMalloc(vars, 'd', 40);
+	runMalloc(vars, 'd', 200);
 	dumpVars(vars);
 	dumpHeap();
+
+	runFree(vars, 'a');
+	dumpVars(vars);
+	dumpHeap();
+
+	runFree(vars, 'c');
+	dumpVars(vars);
+	dumpHeap();
+
+	runFree(vars, 'b');
+	dumpVars(vars);
+	dumpHeap();
+
+
 
 
 	// while (fgets (line, BUFSIZ, stdin) != NULL) {

@@ -56,8 +56,8 @@ void removeFreeList(header *);
 void updateFreeList(header *, size_t, size_t);
 void addToFreeList(void *);
 static void mergeAdjacentFree();
-static void deleteSorted(addr key);
-static int bs(addr key, int low, int high, addr freeList[]);
+static void joinFreeList(addr item);
+static int deleteElement(void* arr[], int n, void *x);
 /** Initialise the Heap. */
 int initHeap (int size)
 {
@@ -137,9 +137,12 @@ void myFree (void *obj)
 {
 	//free allocated memory
 	header *chunk = obj - sizeof(header);
-	if(chunk->status != ALLOC){
-      fprintf(stderr, "Attempt to free unallocated chunk\n");
-      exit(1);
+	if ((addr) chunk > heapMaxAddr() || chunk == NULL) {
+		fprintf(stderr, "Attempt to free unallocated memory\n");
+		exit(1);
+	}
+	if( chunk->status != ALLOC){
+      fprintf(stderr, "Attempt to free unallocated memory\n");
    }
 	chunk->status = FREE;	// change the header status
 	addToFreeList(chunk);	// add the free space to freeList
@@ -147,6 +150,7 @@ void myFree (void *obj)
 	mergeAdjacentFree();	//merge free chunks if free chunks are adjacent to each other
 
 }
+
 
 /** Return the first address beyond the range of the heap. */
 static addr heapMaxAddr (void)
@@ -286,50 +290,63 @@ void addToFreeList (void *address) {
 }
 
 static void mergeAdjacentFree() {
-   addr curr = (addr)Heap.freeList[0];
-   header *chunk = (header *)curr;
-   for (int i = 0; i < Heap.nFree; i++) {
-      chunk = (header *)curr;
-      while ((addr)(chunk + chunk->size) == (addr)Heap.freeList[i+1]) {
-		//Merge 2 addresses 
-		header *addr1;
-		header *addr2;
-		addr1 = Heap.freeList[i];
-		addr2 = Heap.freeList[i+1];
-		addr1->size += addr2->size;
+	addr curr = (addr) Heap.heapMem;
+	addr currNext = (addr) Heap.heapMem;
+	while (curr < heapMaxAddr()) {
+		header *chunk = (header *) curr;
+		currNext += chunk->size;
+		header *nextChunk = (header *) currNext;
 
-		//Delete the merged element
-		deleteSorted((addr)Heap.freeList[i+1]);
+		if (chunk->status == FREE && nextChunk->status == FREE) {
+			//joinFreeList
+			joinFreeList(curr);
+			chunk->size += nextChunk->size;
 
-      }
-      curr = (addr)Heap.freeList[i++];
-   }
+		}
+
+		curr += chunk->size;
+	}
+
+	// if they are both free, merge them
    
 }
 
-static void deleteSorted(addr key) {
-   // find the position of element to be deleted
-   int pos = bs(key, 0, Heap.nFree, (addr *) Heap.freeList);
-   if(pos == -1){
-      printf("Element not found\n");
-      return;
-   }
-   // Deleting Elements
-   int i;
-   for (i = pos; i < Heap.nFree - 1; i++){
-      Heap.freeList[i] = Heap.freeList[i+1];
-   }
-   Heap.nFree--;
+static void joinFreeList(addr item) {
+	addr curr = (addr) Heap.freeList[0];
+	for (int i = 0; i < Heap.nFree; i++) {
+		curr = (addr) Heap.freeList[i];
+		if (item == curr) {
+			header *currFree = Heap.freeList[i];
+			header *nextFree = Heap.freeList[i+1];
+			currFree->size += nextFree->size;
+			deleteElement(Heap.freeList, Heap.nFree, Heap.freeList[i+1]);
+			Heap.nFree--;
+
+		}
+	}
 }
 
-// do a binary search, and return index.
-static int bs(addr key, int low, int high, addr freeList[]){
-   if(high < low)
-      return -1;
-   int mid = (low + high)/2;
-   if(key == freeList[mid])
-      return mid;
-   if (key > freeList[mid])
-      return bs(key, mid+1,high, freeList);
-   return bs(key, low, mid-1, freeList);
-}
+// taken from GeeksforGeeks
+// This function removes an element x from arr[] and 
+// returns new size after removal (size is reduced only 
+// when x is present in arr[] 
+static int deleteElement(void* arr[], int n, void *x) 
+{ 
+   // Search x in array 
+   int i; 
+   for (i=0; i<n; i++) 
+      if (arr[i] == x) 
+         break; 
+  
+   // If x found in array 
+   if (i < n) 
+   { 
+     // reduce size of array and move all 
+     // elements on space ahead 
+     n = n - 1; 
+     for (int j=i; j<n; j++) 
+        arr[j] = arr[j+1]; 
+   } 
+  
+   return n; 
+} 

@@ -39,7 +39,7 @@ int main (void)
 #endif
 
 	List list = NULL;
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i <30; i++) {
 		list = insert (list, rand () % 100);
 		printf ("L = ");
 		showList (list);
@@ -100,3 +100,5 @@ void freeList (List L)
 	freeList (L->next);
 	MEM_FREE (L);
 }
+
+
