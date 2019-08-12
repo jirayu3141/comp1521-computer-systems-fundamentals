@@ -1,0 +1,6 @@
+a = malloc 4
+b = malloc 8
+c = malloc 4
+free b
+d = malloc 40
+free c

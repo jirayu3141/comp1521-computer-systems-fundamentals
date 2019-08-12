@@ -1,12 +1,20 @@
 // COMP1521 19t2 ... Assignment 2: heap management system
-// test1.c: init and dump heap.
+// test3.c: read malloc/free ops and do them
 
 #include <err.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sysexits.h>
 
 #include "myHeap.h"
+
+// static void runCommand (void **vars, const char *line);
+static void runMalloc (void **vars, char var, int size);
+static void runFree (void **vars, char var);
+// static bool validVar (char c);
+static void dumpVars (void **vars);
 
 int main (int argc, char *argv[])
 {
@@ -17,13 +25,105 @@ int main (int argc, char *argv[])
 	if (initHeap (heapSize) < 0)
 		errx (EX_SOFTWARE, "can't init heap of size %d", heapSize);
 
-    int *array = myMalloc(sizeof(int) * 10);
-	for (int i = 0; i < 100000; i++) {
-		array[i] = i;
-		printf("array[i]: %i\n", array[i]);
-	}
+	dumpHeap ();
+
+	// array of 26 pointer variables
+	void *vars[26];
+	for (int i = 0; i < 26; i++)
+		vars[i] = NULL;
+
+	// read malloc/free commands and carry them out
+
+	runMalloc(vars, 'a', 4);
+	dumpVars(vars);
+	dumpHeap();
+
+	runMalloc(vars, 'b', 8);
+	dumpVars(vars);
+	dumpHeap();
+
+	runMalloc(vars, 'c', 4);
+	dumpVars(vars);
+	dumpHeap();
+
+	runFree(vars, 'b');
+	dumpVars(vars);
+	dumpHeap();
+
+	runMalloc(vars, 'd', 40);
+	dumpVars(vars);
+	dumpHeap();
+
+
+	// while (fgets (line, BUFSIZ, stdin) != NULL) {
+	// 	line[strcspn (line, "\n")] = '\0';
+
+	// 	runCommand (vars, line);
+
+	// 	dumpVars (vars);
+	// 	dumpHeap ();
+	// }
 
 	//dumpHeap ();
 
 	return EXIT_SUCCESS;
+}
+
+// static void runCommand (void **vars, const char *line)
+// {
+// 	char var;
+// 	int size;
+
+// 	if (sscanf (line, "%c = malloc %d", &var, &size) == 2) {
+// 		if (! validVar (var))
+// 			warnx ("invalid variable `%c'", var);
+// 		else
+// 			runMalloc (vars, var, size);
+
+
+// 	} else if (sscanf (line, "free %c", &var) == 1) {
+// 		if (! validVar (var))
+// 			warnx ("invalid variable `%c'", var);
+// 		else
+// 			runFree (vars, var);
+
+// 	} else {
+// 		warnx ("ignoring unknown command: %s", line);
+// 	}
+// }
+
+static void runMalloc (void **vars, char var, int size)
+{
+	if ((vars[var - 'a'] = myMalloc (size)) == NULL)
+		errx (EX_SOFTWARE, "couldn't allocate %d bytes for `%c'", size, var);
+}
+
+static void runFree (void **vars, char var)
+{
+	myFree (vars[var - 'a']);
+	vars[var - 'a'] = NULL;
+}
+
+// static bool validVar (char c)
+// {
+// 	return 'a' <= c && c <= 'z';
+// }
+
+// prints allocated variables
+// may be helpful for debugging
+static void dumpVars (void **vars)
+{
+	int onRow = 0;
+	for (int i = 0; i < 26; i++) {
+		if (vars[i] == NULL)
+			continue;
+		printf ("[%c] +%05d ", 'a' + i, heapOffset (vars[i]));
+		onRow++;
+		if (onRow == 5) {
+			printf ("\n");
+			onRow = 0;
+		}
+	}
+	if (onRow != 0)
+		printf ("\n");
 }

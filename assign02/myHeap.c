@@ -50,8 +50,14 @@ static struct heap Heap;
 /// Functions:
 
 static addr heapMaxAddr (void);
-static size_t calculateSize(header*);
-
+//static size_t calculateSize(addr*);
+header *findSmallestFreeChunk(size_t size);
+void removeFreeList(header *);
+void updateFreeList(header *, size_t, size_t);
+void addToFreeList(void *);
+static void mergeAdjacentFree();
+static void deleteSorted(addr key);
+static int bs(addr key, int low, int high, addr freeList[]);
 /** Initialise the Heap. */
 int initHeap (int size)
 {
@@ -96,7 +102,6 @@ void freeHeap (void)
 /** Allocate a chunk of memory large enough to store `size' bytes. */
 void *myMalloc (int size)
 {
-
 	//if less than 1 return null
 	if (size < 1)
 		return NULL;
@@ -104,43 +109,43 @@ void *myMalloc (int size)
 	else if (size % 4 != 0) {
 		size = ((size/4)+1) * 4;
 	}
+	//find the smallest free chnk larger than N + headerSize
+	header *free = findSmallestFreeChunk(size);
 
-	addr p; 	//pointer to points to available data
-	header *curr; 
-	//locate the available space
-	for (int i = 0; i < Heap.nFree; i++) {
-		curr = Heap.freeList[i];
-		//if found an appropriate location
-		if (curr->size > (size + sizeof(header) + MIN_CHUNK)) {
-			p = (addr)curr->data;	//points to the data section
-			//adjust properties
-			curr->status = ALLOC;
-			curr->size = size + sizeof(header);
-			//indicate the properties of the next free chunk
-			Heap.freeList[i] += (size + sizeof(header));
-			curr = Heap.freeList[i];
-			curr->status = FREE;
-			curr->size = calculateSize(curr);
-			break;
-
-		} else if (curr->size <= (size + sizeof(header)) && curr->size > size) {
-			p = (addr)curr->data;
-			curr->size = size+sizeof(header);
-			curr->status = ALLOC;
-		}
+	//if free chunk is smaller than N + HeaderSize + MIN_CHUNK, allocate the whole chunk
+	if (free->size < size + sizeof(header) + MIN_CHUNK) {
+		//adjust the chunk's properties
+		free->status = ALLOC;		//adjust the status
+		free->size = size + sizeof(header);	//adjust the size of the the chunk
+		removeFreeList(free);	//update freeList
+		return free->data;	//return p
+	} else {	//split chunk into 2
+		//adjust the chunk's properties
+		free->status = ALLOC;	//adjust the status
+		//keep track of original size for updating later
+		size_t originalSize = free->size;
+		free->size = size + sizeof(header);	//adjust the size of chunk
+		updateFreeList(free, originalSize, free->size);	//update freeList with new free space
+		return free->data;	//return p
 	}
-	
 
-
-
-
-	return (void *)p; // this just keeps the compiler quiet
+	return NULL; // this just keeps the compiler quiet
 }
 
 /** Deallocate a chunk of memory. */
 void myFree (void *obj)
 {
-	/// TODO ///
+	//free allocated memory
+	header *chunk = obj - sizeof(header);
+	if(chunk->status != ALLOC){
+      fprintf(stderr, "Attempt to free unallocated chunk\n");
+      exit(1);
+   }
+	chunk->status = FREE;	// change the header status
+	addToFreeList(chunk);	// add the free space to freeList
+
+	mergeAdjacentFree();	//merge free chunks if free chunks are adjacent to each other
+
 }
 
 /** Return the first address beyond the range of the heap. */
@@ -200,6 +205,131 @@ void dumpHeap (void)
 		printf ("\n");
 }
 
-static size_t calculateSize(header *head) {
-	return 0;
+// static size_t calculateSize(addr *head) {
+// 	int i = sizeof(header)+10000;
+// 	for (; head[i] != 0; i++) {
+// 	}
+// 	return i;
+// }
+
+header *findSmallestFreeChunk(size_t size) {
+	//iterate through the freeList to find the smallest available space
+	header *curr;
+	header * min = Heap.freeList[0];
+	for (int i = 0; i < Heap.nFree; i++) {
+		curr = Heap.freeList[i];
+		//find the index that corresponds to the min	
+		if (curr->size > size + sizeof(header)) {
+			min = curr;
+			break;
+		}	
+	}
+
+	for (int i = 0; i < Heap.nFree; i++) {
+		curr = Heap.freeList[i];
+		//find the index that corresponds to the min	
+		if (curr->size < min->size && curr->size > size + sizeof(header)) {
+			min = curr;
+		}
+	}
+
+	return min;
+}
+
+//remove the from FreeList
+void removeFreeList(header *item) {
+	//iterate through FreeList
+	for (int i = 0; i < Heap.nFree; i++) {
+		// if FreeList[i] == item, shift everything after item by 1 spot
+		if (Heap.freeList[i] == item) {
+			for (int j = i; j < Heap.nFree; j++) {
+				Heap.freeList[j] = Heap.freeList[j+1];
+			}
+			break;
+		}
+
+	}
+}
+
+//update the item in the free list to point to the new free space
+void updateFreeList(header *item, size_t originalSize, size_t usedSize) {
+	//iterate through FreeList
+	addr curr = (addr) Heap.freeList[0];
+	for (int i = 0; i < Heap.nFree; i++) {
+		header *chunk = (header *)curr;
+		chunk = Heap.freeList[i];
+		// if FreeList[i] == item, change FreeList[i] to the next available position
+		if (chunk == item) {
+			curr += usedSize; 
+			chunk = (header *)curr;
+			chunk->status = FREE;	// update status
+			chunk->size = originalSize - usedSize; // update size fo the next available space
+			Heap.freeList[i] = (header *)curr;	//update freeList
+			break;
+		
+		}
+		curr += chunk->size;
+	}
+}
+
+void addToFreeList (void *address) {
+	//loop through the freeList to see where to add
+	int i;
+	for (i = Heap.nFree-1; (Heap.freeList[i] > address && i >=0); i--)
+		Heap.freeList[i+1] = Heap.freeList[i];
+	//if the list is empty
+	if (Heap.nFree == 0) {
+		Heap.freeList[0] = (header *)address;
+		Heap.nFree++;
+	}
+
+}
+
+static void mergeAdjacentFree() {
+   addr curr = (addr)Heap.freeList[0];
+   header *chunk = (header *)curr;
+   for (int i = 0; i < Heap.nFree; i++) {
+      chunk = (header *)curr;
+      while ((addr)(chunk + chunk->size) == (addr)Heap.freeList[i+1]) {
+		//Merge 2 addresses 
+		header *addr1;
+		header *addr2;
+		addr1 = Heap.freeList[i];
+		addr2 = Heap.freeList[i+1];
+		addr1->size += addr2->size;
+
+		//Delete the merged element
+		deleteSorted((addr)Heap.freeList[i+1]);
+
+      }
+      curr = (addr)Heap.freeList[i++];
+   }
+   
+}
+
+static void deleteSorted(addr key) {
+   // find the position of element to be deleted
+   int pos = bs(key, 0, Heap.nFree, (addr *) Heap.freeList);
+   if(pos == -1){
+      printf("Element not found\n");
+      return;
+   }
+   // Deleting Elements
+   int i;
+   for (i = pos; i < Heap.nFree - 1; i++){
+      Heap.freeList[i] = Heap.freeList[i+1];
+   }
+   Heap.nFree--;
+}
+
+// do a binary search, and return index.
+static int bs(addr key, int low, int high, addr freeList[]){
+   if(high < low)
+      return -1;
+   int mid = (low + high)/2;
+   if(key == freeList[mid])
+      return mid;
+   if (key > freeList[mid])
+      return bs(key, mid+1,high, freeList);
+   return bs(key, low, mid-1, freeList);
 }

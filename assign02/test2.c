@@ -39,7 +39,7 @@ int main (void)
 #endif
 
 	List list = NULL;
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 5; i++) {
 		list = insert (list, rand () % 100);
 		printf ("L = ");
 		showList (list);
@@ -62,6 +62,7 @@ int main (void)
 List insert (List L, int n)
 {
 	Node *new = MEM_ALLOC (sizeof (Node));
+	printf("sizeof node is :%ld\n", sizeof(Node));
 	if (new == NULL) errx (1, "couldn't allocate Node");
 	new->data = n;
 	Node *prev = NULL;

@@ -4,7 +4,7 @@ CC	= gcc
 CFLAGS	= -Wall -std=gnu11 -g
 
 .PHONY:	all
-all:	test1 test2 test3
+all:	test1 test2 test3 test4
 
 test1:		test1.o myHeap.o
 test1.o:	test1.c myHeap.h
