@@ -1,0 +1,28 @@
+# Makefile for Week 05 lecture exercises
+
+#CC=dcc
+CC=gcc
+CFLAGS=-Wall -Werror
+BINS=sadd1 sadd2 slist1 slist2 sstu1 sstu2 stat
+
+all: $(BINS)
+
+stat : stat.c
+sadd1 : sadd1.o Student.o
+sadd1.o : sadd1.c Student.h
+slist1 : slist1.o Student.o
+slist1.o : slist1.c Student.h
+sadd2 : sadd2.o Student.o
+sadd2.o : sadd2.c Student.h
+slist2 : slist2.o Student.o
+slist2.o : slist2.c Student.h
+sstu1 : sstu1.o Student.o
+sstu1.o : sstu1.c Student.h
+sstu2 : sstu2.o Student.o
+sstu2.o : sstu2.c Student.h
+update: update.o Student.o
+update.o : update.c Student.h
+Student.o : Student.c Student.h
+
+clean :
+	rm -f $(BINS) a.out core

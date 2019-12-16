@@ -61,7 +61,18 @@ int main(int argc, char **argv)
 
 void boundingBox(int in, Coord *TL, Coord *BR)
 {
-	// TODO
-	
+	Point p;
+	Byte maxX, maxY, minX, minY;
+	maxX = maxY = 0;	minX = minY = 255;
+	while (read(in, &p, sizeof(p)) > 0) {
+		if (p.coord.x > maxX) maxX = p.coord.x;
+		if (p.coord.x < minX) minX = p.coord.x;
+		if (p.coord.y > maxY) maxY = p.coord.y;
+		if (p.coord.y < minY) minY = p.coord.y;
+	}
+	TL->x = minX;
+	TL->y = maxY;
+	BR->x = maxX;
+	BR->y = minY;
 	
 }

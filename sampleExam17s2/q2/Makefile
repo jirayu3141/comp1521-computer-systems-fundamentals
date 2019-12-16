@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c99 -Wall -Werror
+CFLAGS=-std=c99 -Wall
 
 q2 : q2.c
 

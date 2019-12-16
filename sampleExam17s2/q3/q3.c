@@ -94,6 +94,7 @@ int main(int argc, char **argv)
 JobQ *initQ(int N)
 {
 	// TODO ... replace this line by your code
+	return NULL;
 }
 
 // add a new job to the queue in priority order
@@ -108,6 +109,8 @@ Job removeQhead(JobQ * q)
 {
 	assert(q != NULL);
 	// TODO ... replace this line by your code
+	
+	return;
 }
 
 // check whether the queue is full
